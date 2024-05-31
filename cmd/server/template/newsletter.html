@@ -112,6 +112,7 @@
         <div class="content">
             <h2>오늘 올라온 글</h2>
 
+            {{range .}}
             <div class="article">
                 <a href="{{.ItemLink}}">
                     <img src="{{.ItemThumbnail}}" alt="Article Image">
@@ -122,50 +123,8 @@
                     <p>{{.ItemDescription}}</p>
                 </div>
             </div>
-
-            <div class="article">
-                <a href="https://example.com/article2">
-                    <img src="https://via.placeholder.com/80" alt="Article Image">
-                </a>
-                <div>
-                    <h3><a href="https://example.com/article2">Essential Linux Terminal Hacks for Efficiency</a></h3>
-                    <p>Sagar #OpenToWork in FAUN—Developer Community • 4 min read</p>
-                    <p>Tips and tricks in Linux terminal for better productivity and ease of use.</p>
-                </div>
-            </div>
-
-            <div class="article">
-                <a href="https://example.com/article3">
-                    <img src="https://via.placeholder.com/80" alt="Article Image">
-                </a>
-                <div>
-                    <h3><a href="https://example.com/article3">Why There Are Many Programmers, but There Aren't Many Good Ones</a></h3>
-                    <p>Josef Cruz in Stackademic • 4 min read</p>
-                    <p>I'll put an end to this question once and for all.</p>
-                </div>
-            </div>
-
-            <div class="article">
-                <a href="https://example.com/article4">
-                    <img src="https://via.placeholder.com/80" alt="Article Image">
-                </a>
-                <div>
-                    <h3><a href="https://example.com/article4">Unlocking Your Tech Wonderland by Combining GitOps, Platforms and AI</a></h3>
-                    <p>Thomas Schuetz in ITNEXT • 11 min read</p>
-                    <p>Why is Kubernetes so complicated, why is the ecosystem so large and how is this related to platforms? Read...</p>
-                </div>
-            </div>
-
-            <div class="article">
-                <a href="https://example.com/article5">
-                    <img src="https://via.placeholder.com/80" alt="Article Image">
-                </a>
-                <div>
-                    <h3><a href="https://example.com/article5">Automating My Life with Fabric: The Ultimate Guide</a></h3>
-                    <p>Gao Dalie (高達烈) in Level Up Coding • 9 min read</p>
-                    <p>Here's how you can automate your life using Fabric.</p>
-                </div>
-            </div>
+            {{end}}
+            
         </div>
         <div class="footer">
             <p>Stories for <strong>Nerd Planet</strong> <a href="https://nerdplanet.app">@Nerd Planet</a> • <a href="#">Become a member</a></p>

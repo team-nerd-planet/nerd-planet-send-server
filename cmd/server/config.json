@@ -1,0 +1,16 @@
+{
+  "DATABASE": {
+    "HOST": "localhost",
+    "PORT": 5432,
+    "USER_NAME": "nerd",
+    "PASSWORD": "planet1!",
+    "DB_NAME": "nerd_planet",
+    "LOG_LEVEL": 4
+  },
+  "SMTP": {
+    "HOST": "localhost",
+    "PORT": 5000,
+    "USER_NAME": "nerd",
+    "PASSWORD": "planet1!"
+  }
+}
