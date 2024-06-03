@@ -76,6 +76,9 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) {
 		param = make([]interface{}, 0)
 	)
 
+	where = append(where, "? <= item_published")
+	param = append(param, subscription.Published)
+
 	if len(subscription.PreferredCompanyArr) > 0 {
 		where = append(where, "feed_id IN ?")
 		param = append(param, []int64(subscription.PreferredCompanyArr))
