@@ -59,12 +59,12 @@ func main() {
 		slog.Error("Unfortunately can't load a location", "error", err.Error())
 	} else {
 		time.Local = location
-		//gocron.ChangeLoc(location)
+		gocron.ChangeLoc(location)
 	}
 
 	slog.Info("current time", "time", time.Now())
 
-	gocron.Every(1).Day().At("10:14").Do(func() {
+	gocron.Every(1).Day().At("10:17").Do(func() {
 		slog.Info("start cron", "time", *location)
 
 		var subscriptionArr []entity.Subscription
