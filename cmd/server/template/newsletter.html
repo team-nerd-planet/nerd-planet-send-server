@@ -1,134 +1,50 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nerd Planet Daily Digest</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #ddd;
-        }
-        .header img {
-            max-width: 100%;
-        }
-        .content {
-            padding: 20px 0;
-        }
-        .content h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        .content p {
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        .article {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .article img {
-            width: 80px;
-            height: 80px;
-            margin-right: 20px;
-        }
-        .article div {
-            flex-grow: 1;
-        }
-        .article h3 {
-            font-size: 16px;
-            margin: 0 0 10px;
-        }
-        .article p {
-            font-size: 14px;
-            margin: 0;
-        }
-        .article a {
-            text-decoration: none;
-            color: #333;
-        }
-        .footer {
-            text-align: center;
-            padding: 10px 0;
-            border-top: 1px solid #ddd;
-            font-size: 12px;
-        }
-        .footer a {
-            color: #333;
-            text-decoration: none;
-        }
-    </style>
+    <title>Medium Daily Digest</title>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <svg width="160" height="134" viewBox="0 0 160 134" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M38.2053 49.5997C41.6987 42.4189 44.7778 38.0998 50.9074 32.9813C57.9731 27.0813 62.9279 24.4493 72.0381 23.1291C80.2292 21.9421 84.028 22.2982 91.032 23.1291C97.6482 23.914 108.245 29.8951 108.245 29.8951C108.245 29.8951 95.1366 33.5491 87.2332 37.136C78.4726 41.1118 73.8336 44.0378 65.9838 49.5997C59.1598 54.4348 52.3381 60.3325 46.3964 66.218C39.8938 72.659 34.6439 81.6493 34.6439 81.6493C34.6439 81.6493 33.5283 75.6008 33.4568 71.9157C33.2841 63.0074 34.3074 57.612 38.2053 49.5997Z" fill="url(#paint0_linear_103_95)"/>
-<path d="M50.9074 68.4734C41.1731 77.1386 36.1872 85.6852 36.1872 85.6852C36.1872 85.6852 36.388 87.7839 36.8995 89.0089C37.3406 90.0654 38.4427 91.5016 38.4427 91.5016C38.4427 91.5016 42.1228 82.8363 52.9255 73.2214C59.5193 67.3527 63.4982 64.1329 70.851 59.0959C78.9915 53.5193 83.7821 50.6312 92.694 46.3947C107.177 39.51 118.454 38.5604 118.454 38.5604L116.792 36.7205L115.13 34.8806C115.13 34.8806 101.597 37.0766 92.694 41.1718C84.5326 44.9257 78.4016 48.4126 70.851 53.2795C62.6213 58.5841 58.2208 61.9632 50.9074 68.4734Z" fill="url(#paint1_linear_103_95)"/>
-<path d="M49.3642 82.2428C43.4001 88.3931 40.4608 95.3001 40.4608 95.3001C40.4608 95.3001 42.6149 98.7489 44.3783 100.642C45.9687 102.349 49.0081 104.678 49.0081 104.678C49.0081 104.678 58.4125 99.863 64.3219 96.2497C72.4145 91.3014 76.7066 87.8763 84.2654 82.0054C92.6288 75.5097 97.4245 71.9165 104.921 64.4375C112.229 57.1467 122.965 44.3768 122.965 44.3768L121.66 43.0711C121.66 43.0711 112.702 44.0124 107.177 45.5638C100.595 47.4118 97.1807 49.342 91.032 52.3298C83.3363 56.0695 79.1222 58.4521 72.0381 63.2504C64.4732 68.3744 55.7248 75.6836 49.3642 82.2428Z" fill="url(#paint2_linear_103_95)"/>
-<path d="M93.6437 98.1489C85.1454 104.393 70.851 112.631 70.851 112.631C70.851 112.631 83.9191 114.66 92.694 111.918C100.625 109.44 106.6 106.222 112.756 100.642C118.451 95.4792 121.524 91.9417 124.509 84.8543C127.264 78.3104 128.189 66.4554 128.189 66.4554C128.189 66.4554 116.73 78.7392 108.957 85.6852C103.208 90.8231 99.8574 93.5832 93.6437 98.1489Z" fill="url(#paint3_linear_103_95)"/>
-<path d="M1.16725 130.555C-2.0724 124.72 2.13993 117.135 5.20345 111.206C8.88351 104.084 11.6139 101.71 16.3623 95.3001C18.709 92.1323 20.3406 90.604 23.0102 87.7031C25.6299 84.8565 29.8955 80.581 29.8955 80.581L30.3703 82.2428C30.3703 82.2428 28.4114 84.4809 27.1651 85.9226C24.0247 89.5553 22.0854 91.4531 19.2114 95.3001C16.8721 98.4314 15.6184 100.243 13.632 103.609C11.6194 107.02 10.1992 108.856 9.00222 112.631C7.93793 115.987 6.77249 118.803 7.57768 121.533C8.53315 124.773 11.1169 126.637 13.9881 126.637C18.143 126.637 21.8478 126.207 26.9277 124.976C34.0505 123.249 44.1409 117.497 44.1409 117.497C44.1409 117.497 37.4115 119.71 33.4568 120.584C29.7879 121.394 28.0157 121.847 23.9599 122.127C20.5173 122.364 15.5314 121.771 13.9881 119.871C12.2475 117.729 11.6917 115.154 12.6823 111.918C14.463 106.102 17.6703 101.8 20.9921 96.9619C24.3024 92.141 30.489 85.6852 30.489 85.6852L31.4387 87.9405C31.4387 87.9405 28.0071 92.3063 26.0967 95.3001C23.9095 98.7277 22.6541 100.642 21.1108 104.44C19.9197 107.372 19.7583 111.206 20.636 112.631C22.0824 114.978 24.1787 115.619 26.9277 115.836C31.4387 116.192 37.7385 115.031 44.1409 112.631C54.5875 108.713 63.3819 102.995 74.7685 95.3001C86.382 87.452 92.445 82.3288 102.784 72.8653C111.079 65.2737 115.991 61.1496 122.965 52.3298C129.418 44.1694 133.707 39.6472 137.33 29.8951C138.873 25.7405 139.11 21.1111 136.736 19.2119C133.651 16.7443 127.476 17.1939 122.253 18.9745C115.047 21.431 108.957 24.9096 108.957 24.9096L106.702 23.4851C106.702 23.4851 112.92 19.5192 116.555 17.6688C122.474 14.6554 125.602 13.3168 132.106 11.9711C135.549 11.2588 138.142 11.1764 139.941 11.6149C142.758 12.3015 145.165 13.8703 145.639 18.0248C146.391 24.6039 138.279 38.9165 138.279 38.9165C138.279 38.9165 142.836 32.812 145.165 28.708C147.18 25.1559 149.339 20.647 149.794 19.3306C150.701 16.7119 151.233 12.1198 149.082 9.71568C147.302 7.72617 145.092 7.35731 142.434 7.10423C137.448 6.62942 130.563 9.33319 125.696 11.0214C116.742 14.1269 104.209 22.2982 104.209 22.2982L102.784 20.9924C102.784 20.9924 113.808 13.3798 121.422 9.47831L121.838 9.26531C128.592 5.80356 133.077 3.50524 139.941 1.64397C146.834 -0.225081 153.928 -0.848821 157.392 1.64396C159.868 3.42597 160.241 6.86685 159.885 10.0718C159.172 16.4817 156.323 21.1111 152.287 27.9959C145.033 40.3703 139.764 45.3127 130.207 56.0096C121.427 65.8368 115.927 70.8419 106.108 79.6314C95.5244 89.1057 89.3768 94.2321 77.855 102.541C69.8249 108.332 65.2652 111.541 56.7243 116.548C46.1362 122.755 40.311 126.914 28.5896 130.555C22.7359 132.373 21.0269 133.997 13.2758 133.997C10.1893 133.997 3.20827 134.23 1.16725 130.555Z" fill="url(#paint4_linear_103_95)"/>
-<defs>
-<linearGradient id="paint0_linear_103_95" x1="75.1445" y1="72.7645" x2="41.7906" y2="133.898" gradientUnits="userSpaceOnUse">
-<stop stop-color="#93EBFF"/>
-<stop offset="1" stop-color="#588D99"/>
-</linearGradient>
-<linearGradient id="paint1_linear_103_95" x1="75.1445" y1="72.7645" x2="41.7906" y2="133.898" gradientUnits="userSpaceOnUse">
-<stop stop-color="#93EBFF"/>
-<stop offset="1" stop-color="#588D99"/>
-</linearGradient>
-<linearGradient id="paint2_linear_103_95" x1="75.1445" y1="72.7645" x2="41.7906" y2="133.898" gradientUnits="userSpaceOnUse">
-<stop stop-color="#93EBFF"/>
-<stop offset="1" stop-color="#588D99"/>
-</linearGradient>
-<linearGradient id="paint3_linear_103_95" x1="75.1445" y1="72.7645" x2="41.7906" y2="133.898" gradientUnits="userSpaceOnUse">
-<stop stop-color="#93EBFF"/>
-<stop offset="1" stop-color="#588D99"/>
-</linearGradient>
-<linearGradient id="paint4_linear_103_95" x1="75.1445" y1="72.7645" x2="41.7906" y2="133.898" gradientUnits="userSpaceOnUse">
-<stop stop-color="#93EBFF"/>
-<stop offset="1" stop-color="#588D99"/>
-</linearGradient>
-</defs>
-</svg>
-
-            <h1>너드플래닛 기술블로그 뉴스레터</h1>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+    <div style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #1c1c20; padding: 20px; color: #f8f9fe;">
+        <div style="text-align: center; padding: 10px 0; border-bottom: 1px solid #ddd; background:url('https://imagedelivery.net/6qzLODAqs2g1LZbVYqtuQw/1d86d274-7ffb-4281-4174-e30a14c12100/public'); background-size: cover;">
+            <h1 style="font-size:42px; font-weight:900;">너드플래닛 뉴스레터</h1>
         </div>
-        <div class="content">
-            <h2>오늘 올라온 글</h2>
+        <div style="display:flex; justify-content:center; align-items:center; flex-direction:column; gap:6px; font-weight:600px; padding:36px 0px;">
+            <div>
+                안녕하세요. {{ .Name }}님 🥳
+            </div>
+            <div>
+                오늘의 뉴스레터가 도착했어요!
+            </div>
+            <div>
+                총 {{ .Length }}개의 새로운 글을 준비했답니다.
+            </div>
+        </div>
+        <div style="padding: 0;">
+            <h2 style="font-size: 18px; margin-bottom: 10px;">새로운 글</h2>
 
-            {{range .}}
-            <div class="article">
+            {{range .Items}}
+
+            <div style="display: flex; align-items: flex-start; margin-bottom: 20px;">
                 <a href="{{.ItemLink}}">
-                    <img src="{{.ItemThumbnail}}" alt="Article Image">
+                    <img src="{{.ItemThumbnail}}" alt="Article Image" style="width: 100px; height: 100px; margin-right: 20px; overflow:hidden;">
                 </a>
-                <div>
-                    <h3><a href="{{.ItemLink}}">{{.ItemTitle}}</a></h3>
-                    <p>{{.FeedName}}</p>
-                    <p>{{.ItemDescription}}</p>
+                <div style="flex-grow: 1;">
+                    <h3 style="font-size: 16px; margin: 0 0 5px;"><a href="{{.ItemLink}}" style="text-decoration: none; color: #f8f9fe;">{{.ItemTitle}}</a></h3>
+                    <p style="font-size: 12px; margin: 0;padding:0; color:#C0C0C0;">{{.FeedName}}</p>
+                    <p style="font-size: 14px; margin: 0;color:#E3E3E3;margin-top:20px">{{.ItemDescription}}</p>
                 </div>
             </div>
+
             {{end}}
-            
+
         </div>
-        <div class="footer">
-            <p>Stories for <strong>Nerd Planet</strong> <a href="https://nerdplanet.app">@Nerd Planet</a> • <a href="#">Become a member</a></p>
+        <div style="text-align: center; padding: 10px 0; border-top: 1px solid #ddd; font-size: 12px;">
+            <div style="flex:1; display:flex; justify-content:center; align-items:center; padding: 24px">
+                <img src="https://imagedelivery.net/6qzLODAqs2g1LZbVYqtuQw/c128208d-c3ff-488f-93d7-4ba3ce866c00/public" alt="plaa" width="60px" height="60px"/>
+            </div>
+            <p>Stories for <strong>Nerd Planet</strong> <a href="#" style="color: white; text-decoration: none;">@Nerd Planet</a> • <a href="#" style="color: white; text-decoration: none;">Become a member</a></p>
         </div>
     </div>
 </body>
-</html>

@@ -61,7 +61,7 @@ func main() {
 		gocron.ChangeLoc(location)
 	}
 
-	gocron.Every(1).Day().At("09:10").Do(func() {
+	gocron.Every(1).Day().At("09:00").Do(func() {
 		slog.Info("start cron", "time", *location)
 
 		var subscriptionArr []entity.Subscription
@@ -112,7 +112,7 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) {
 		"item_title",
 		"LEFT(item_description, 50) as item_description",
 		"item_link",
-		"NULLIF(item_thumbnail, 'https://www.nerdplanet.app/images/feed-thumbnail.png') as item_thumbnail",
+		"COALESCE(item_thumbnail, 'https://www.nerdplanet.app/images/feed-thumbnail.png') as item_thumbnail",
 		"feed_name",
 	).Where(strings.Join(where, " AND "), param...).Limit(10).Find(&items).Error; err != nil {
 		slog.Error(err.Error(), "error", err)
@@ -120,6 +120,23 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) {
 	}
 
 	if len(items) > 0 {
+		var name string
+		if subscription.Name != nil {
+			name = *subscription.Name
+		} else {
+			name = strings.Split(subscription.Email, "@")[0]
+		}
+
+		data := struct {
+			Name   string
+			Length int
+			Items  []entity.ItemView
+		}{
+			Name:   name,
+			Length: len(items),
+			Items:  items,
+		}
+
 		_, b, _, _ := runtime.Caller(0)
 		configDirPath := path.Join(path.Dir(b))
 		t, err := template.ParseFiles(fmt.Sprintf("%s/template/newsletter.html", configDirPath))
@@ -129,7 +146,7 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) {
 		}
 
 		var body bytes.Buffer
-		if err := t.Execute(&body, items); err != nil {
+		if err := t.Execute(&body, data); err != nil {
 			slog.Error(err.Error(), "error", err)
 			return
 		}
