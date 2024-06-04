@@ -3,10 +3,8 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/smtp"
-	"os"
 	"path"
 	"runtime"
 	"strconv"
@@ -17,62 +15,63 @@ import (
 	"github.com/jasonlvhit/gocron"
 	"github.com/spf13/viper"
 	"github.com/team-nerd-planet/send-server/entity"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 func main() {
-	conf, err := NewConfig()
-	if err != nil {
-		panic(err)
-	}
+	// conf, err := NewConfig()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/Seoul",
-		conf.Database.Host,
-		conf.Database.Port,
-		conf.Database.UserName,
-		conf.Database.Password,
-		conf.Database.DbName,
-	)
+	// dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/Seoul",
+	// 	conf.Database.Host,
+	// 	conf.Database.Port,
+	// 	conf.Database.UserName,
+	// 	conf.Database.Password,
+	// 	conf.Database.DbName,
+	// )
 
-	newLogger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-		logger.Config{
-			SlowThreshold:             time.Second,        // Slow SQL threshold
-			LogLevel:                  logger.LogLevel(4), // Log level
-			IgnoreRecordNotFoundError: true,               // Ignore ErrRecordNotFound error for logger
-			ParameterizedQueries:      false,              // Don't include params in the SQL log
-			Colorful:                  false,              // Disable color
-		},
-	)
+	// newLogger := logger.New(
+	// 	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+	// 	logger.Config{
+	// 		SlowThreshold:             time.Second,        // Slow SQL threshold
+	// 		LogLevel:                  logger.LogLevel(4), // Log level
+	// 		IgnoreRecordNotFoundError: true,               // Ignore ErrRecordNotFound error for logger
+	// 		ParameterizedQueries:      false,              // Don't include params in the SQL log
+	// 		Colorful:                  false,              // Disable color
+	// 	},
+	// )
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: newLogger,
-	})
-	if err != nil {
-		panic(err)
-	}
+	// db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	// 	Logger: newLogger,
+	// })
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	location, err := time.LoadLocation("Asia/Seoul")
 	if err != nil {
 		slog.Error("Unfortunately can't load a location", "error", err.Error())
 	} else {
-		gocron.ChangeLoc(location)
+		time.Local = location
+		//gocron.ChangeLoc(location)
 	}
 
-	gocron.Every(1).Day().At("09:00").Do(func() {
+	slog.Info("current time", "time", time.Now())
+
+	gocron.Every(1).Day().At("10:12").Do(func() {
 		slog.Info("start cron", "time", *location)
 
-		var subscriptionArr []entity.Subscription
+		// var subscriptionArr []entity.Subscription
 
-		if err := db.Find(&subscriptionArr).Error; err != nil {
-			panic(err)
-		}
+		// if err := db.Find(&subscriptionArr).Error; err != nil {
+		// 	panic(err)
+		// }
 
-		for _, subscription := range subscriptionArr {
-			publish(conf, db, subscription)
-		}
+		// for _, subscription := range subscriptionArr {
+		// 	publish(conf, db, subscription)
+		// }
 	})
 
 	<-gocron.Start()
