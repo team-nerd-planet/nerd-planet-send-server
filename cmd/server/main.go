@@ -54,7 +54,16 @@ func main() {
 		panic(err)
 	}
 
-	gocron.Every(1).Day().At("09:00").Do(func() {
+	location, err := time.LoadLocation("Asia/Seoul")
+	if err != nil {
+		slog.Error("Unfortunately can't load a location", "error", err.Error())
+	} else {
+		gocron.ChangeLoc(location)
+	}
+
+	gocron.Every(1).Day().At("09:10").Do(func() {
+		slog.Info("start cron", "time", *location)
+
 		var subscriptionArr []entity.Subscription
 
 		if err := db.Find(&subscriptionArr).Error; err != nil {
