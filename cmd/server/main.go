@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	"github.com/jasonlvhit/gocron"
+	"github.com/slack-go/slack"
 	"github.com/spf13/viper"
 	"github.com/team-nerd-planet/send-server/entity"
 	"gorm.io/driver/postgres"
@@ -73,15 +75,24 @@ func main() {
 			panic(err)
 		}
 
+		var sb strings.Builder
+		sb.WriteString("안녕하세요! plaa 입니다.\n너드플라넷의 소식을 아래와 같이 전달했어요!!\n\n")
+
 		for _, subscription := range subscriptionArr {
-			publish(conf, db, subscription)
+			count := publish(conf, db, subscription)
+
+			sb.WriteString(fmt.Sprintf("%s님에게 %d개의 리스트를 보냈어요.\n", subscription.Email, count))
+		}
+
+		if err := webhook(conf, sb.String()); err != nil {
+			panic(err)
 		}
 	})
 
 	<-gocron.Start()
 }
 
-func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) {
+func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
 	var (
 		items []entity.ItemView
 		where = make([]string, 0)
@@ -119,7 +130,7 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) {
 		"feed_name",
 	).Where(strings.Join(where, " AND "), param...).Limit(10).Find(&items).Error; err != nil {
 		slog.Error(err.Error(), "error", err)
-		return
+		return 0
 	}
 
 	if len(items) > 0 {
@@ -145,13 +156,13 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) {
 		t, err := template.ParseFiles(fmt.Sprintf("%s/template/newsletter.html", configDirPath))
 		if err != nil {
 			slog.Error(err.Error(), "error", err)
-			return
+			return 0
 		}
 
 		var body bytes.Buffer
 		if err := t.Execute(&body, data); err != nil {
 			slog.Error(err.Error(), "error", err)
-			return
+			return 0
 		}
 
 		auth := smtp.PlainAuth("", conf.Smtp.UserName, conf.Smtp.Password, conf.Smtp.Host)
@@ -163,15 +174,17 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) {
 		err = smtp.SendMail(fmt.Sprintf("%s:%d", conf.Smtp.Host, conf.Smtp.Port), auth, from, to, msg)
 		if err != nil {
 			slog.Error(err.Error(), "error", err)
-			return
+			return 0
 		}
 	}
 
 	subscription.Published = time.Now()
 	if err := db.Save(subscription).Error; err != nil {
 		slog.Error(err.Error(), "error", err)
-		return
+		return 0
 	}
+
+	return len(items)
 }
 
 func getArrToString(arr []int64) string {
@@ -186,6 +199,7 @@ func getArrToString(arr []int64) string {
 type Config struct {
 	Database Database `mapstructure:"DATABASE"`
 	Smtp     Smtp     `mapstructure:"SMTP"`
+	Webhook  Webhook  `mapstructure:"WEBHOOK"`
 }
 
 type Database struct {
@@ -202,6 +216,10 @@ type Smtp struct {
 	Port     int    `mapstructure:"PORT"`
 	UserName string `mapstructure:"USER_NAME"`
 	Password string `mapstructure:"PASSWORD"`
+}
+
+type Webhook struct {
+	Key string `mapstructure:"KEY"`
 }
 
 func NewConfig() (*Config, error) {
@@ -228,4 +246,24 @@ func NewConfig() (*Config, error) {
 	}
 
 	return &conf, nil
+}
+
+func webhook(conf *Config, text string) error {
+	attachment := slack.Attachment{
+		Color:         "good",
+		Fallback:      "You successfully posted by Incoming Webhook URL!",
+		AuthorName:    "plaa",
+		AuthorSubname: "I live in Nerd Planet.",
+		AuthorLink:    "https://www.nerdplanet.app",
+		AuthorIcon:    "https://avatars.slack-edge.com/2024-06-08/7245446528738_95ffe7a911c7aced7f3c_512.png",
+		Text:          text,
+		Footer:        "plaa",
+		FooterIcon:    "https://avatars.slack-edge.com/2024-06-08/7245446528738_95ffe7a911c7aced7f3c_512.png",
+		Ts:            json.Number(strconv.FormatInt(time.Now().Unix(), 10)),
+	}
+	msg := slack.WebhookMessage{
+		Attachments: []slack.Attachment{attachment},
+	}
+
+	return slack.PostWebhook(conf.Webhook.Key, &msg)
 }
