@@ -124,9 +124,9 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
 
 	if err := db.Select(
 		"item_title",
-		"LEFT(item_description, 50) as item_description",
+		"LEFT(item_description, 50) AS item_description",
 		"item_link",
-		"COALESCE(item_thumbnail, 'https://www.nerdplanet.app/images/feed-thumbnail.png') as item_thumbnail",
+		"CASE WHEN item_thumbnail = '' OR item_thumbnail IS NULL THEN 'https://www.nerdplanet.app/images/feed-thumbnail.png' ELSE item_thumbnail END AS item_thumbnail",
 		"feed_name",
 	).Where(strings.Join(where, " AND "), param...).Limit(10).Find(&items).Error; err != nil {
 		slog.Error(err.Error(), "error", err)
