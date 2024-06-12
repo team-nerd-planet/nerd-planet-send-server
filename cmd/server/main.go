@@ -102,25 +102,26 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
 	where = append(where, "? <= item_published")
 	param = append(param, subscription.Published)
 
-	if len(subscription.PreferredCompanyArr) > 0 {
-		where = append(where, "feed_id IN ?")
-		param = append(param, []int64(subscription.PreferredCompanyArr))
-	}
+	// TODO: 카테고라이징이 제대로 준비될 때까지 임시로 조건 비활성화
+	// if len(subscription.PreferredCompanyArr) > 0 {
+	// 	where = append(where, "feed_id IN ?")
+	// 	param = append(param, []int64(subscription.PreferredCompanyArr))
+	// }
 
-	if len(subscription.PreferredCompanySizeArr) > 0 {
-		where = append(where, "company_size IN ?")
-		param = append(param, []int64(subscription.PreferredCompanySizeArr))
-	}
+	// if len(subscription.PreferredCompanySizeArr) > 0 {
+	// 	where = append(where, "company_size IN ?")
+	// 	param = append(param, []int64(subscription.PreferredCompanySizeArr))
+	// }
 
-	if len(subscription.PreferredJobArr) > 0 {
-		where = append(where, "job_tags_id_arr && ?") // `&&`: overlap (have elements in common)
-		param = append(param, getArrToString(subscription.PreferredJobArr))
-	}
+	// if len(subscription.PreferredJobArr) > 0 {
+	// 	where = append(where, "job_tags_id_arr && ?") // `&&`: overlap (have elements in common)
+	// 	param = append(param, getArrToString(subscription.PreferredJobArr))
+	// }
 
-	if len(subscription.PreferredSkillArr) > 0 {
-		where = append(where, "skill_tags_id_arr && ?") // `&&`: overlap (have elements in common)
-		param = append(param, getArrToString(subscription.PreferredSkillArr))
-	}
+	// if len(subscription.PreferredSkillArr) > 0 {
+	// 	where = append(where, "skill_tags_id_arr && ?") // `&&`: overlap (have elements in common)
+	// 	param = append(param, getArrToString(subscription.PreferredSkillArr))
+	// }
 
 	if err := db.Select(
 		"item_title",
