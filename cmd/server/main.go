@@ -129,7 +129,7 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
 		"item_link",
 		"CASE WHEN item_thumbnail = '' OR item_thumbnail IS NULL THEN 'https://www.nerdplanet.app/images/feed-thumbnail.png' ELSE item_thumbnail END AS item_thumbnail",
 		"feed_name",
-	).Where(strings.Join(where, " AND "), param...).Limit(10).Find(&items).Error; err != nil {
+	).Where(strings.Join(where, " AND "), param...).Limit(5).Find(&items).Error; err != nil {
 		slog.Error(err.Error(), "error", err)
 		return 0
 	}
