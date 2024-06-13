@@ -66,7 +66,7 @@ func main() {
 
 	slog.Info("current time", "time", time.Now())
 
-	gocron.Every(1).Day().At("09:00").Do(func() {
+	gocron.Every(1).Day().At("07:00").Do(func() {
 		slog.Info("start schedule", "time", *location)
 
 		var subscriptionArr []entity.Subscription
