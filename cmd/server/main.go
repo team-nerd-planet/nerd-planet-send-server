@@ -15,7 +15,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/jasonlvhit/gocron"
 	"github.com/slack-go/slack"
 	"github.com/spf13/viper"
 	"github.com/team-nerd-planet/send-server/entity"
@@ -56,48 +55,80 @@ func main() {
 		panic(err)
 	}
 
-	location, err := time.LoadLocation("Asia/Seoul")
-	if err != nil {
-		slog.Error("Unfortunately can't load a location", "error", err.Error())
-	} else {
-		time.Local = location
-		gocron.ChangeLoc(location)
+	// location, err := time.LoadLocation("Asia/Seoul")
+	// if err != nil {
+	// 	slog.Error("Unfortunately can't load a location", "error", err.Error())
+	// } else {
+	// 	time.Local = location
+	// 	gocron.ChangeLoc(location)
+	// }
+
+	// slog.Info("current time", "time", time.Now())
+
+	// gocron.Every(1).Day().At("07:00").Do(func() {
+	// 	slog.Info("start schedule", "time", *location)
+
+	var subscriptionArr []entity.Subscription
+
+	if err := db.Find(&subscriptionArr).Error; err != nil {
+		panic(err)
 	}
 
-	slog.Info("current time", "time", time.Now())
+	var sb strings.Builder
+	sb.WriteString("안녕하세요! plaa 입니다.\n너드플라넷의 소식을 아래와 같이 전달했어요!!\n\n")
 
-	gocron.Every(1).Day().At("07:00").Do(func() {
-		slog.Info("start schedule", "time", *location)
+	res := make(chan PublishResult, len(subscriptionArr))
 
-		var subscriptionArr []entity.Subscription
+	fmt.Printf("subscriptionArr = %d\n", len(subscriptionArr))
 
-		if err := db.Find(&subscriptionArr).Error; err != nil {
-			panic(err)
-		}
+	for _, subscription := range subscriptionArr {
+		go publish(res, conf, db, subscription)
+	}
 
-		var sb strings.Builder
-		sb.WriteString("안녕하세요! plaa 입니다.\n너드플라넷의 소식을 아래와 같이 전달했어요!!\n\n")
+	var v PublishResult
+	var ok bool
 
-		for _, subscription := range subscriptionArr {
-			count := publish(conf, db, subscription)
+	for v, ok = <-res; ok; v, ok = <-res {
+		fmt.Println("RES!!!!!!")
+		sb.WriteString(fmt.Sprintf("%s님에게 %d개의 리스트를 보냈어요.\n", v.name, v.count))
+	}
 
-			sb.WriteString(fmt.Sprintf("%s님에게 %d개의 리스트를 보냈어요.\n", subscription.Email, count))
-		}
+	// for r := range res {
+	// 	fmt.Println("RES!!!!!!")
+	// 	sb.WriteString(fmt.Sprintf("%s님에게 %d개의 리스트를 보냈어요.\n", r.name, r.count))
+	// }
 
-		if err := webhook(conf, sb.String()); err != nil {
-			panic(err)
-		}
-	})
+	// if err := webhook(conf, sb.String()); err != nil {
+	// 	panic(err)
+	// }
+	// })
 
-	<-gocron.Start()
+	// <-gocron.Start()
 }
 
-func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
+type PublishResult struct {
+	name  string
+	count int
+}
+
+func publish(res chan PublishResult, conf *Config, db *gorm.DB, subscription entity.Subscription) {
 	var (
 		items []entity.ItemView
 		where = make([]string, 0)
 		param = make([]interface{}, 0)
+		name  string
+		count int = 0
 	)
+
+	if subscription.Name != nil {
+		name = *subscription.Name
+	} else {
+		name = strings.Split(subscription.Email, "@")[0]
+	}
+
+	defer func() {
+		res <- PublishResult{name: name, count: count}
+	}()
 
 	where = append(where, "? <= item_published")
 	param = append(param, subscription.Published)
@@ -131,24 +162,19 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
 		"feed_name",
 	).Where(strings.Join(where, " AND "), param...).Limit(5).Find(&items).Error; err != nil {
 		slog.Error(err.Error(), "error", err)
-		return 0
+		return
 	}
 
-	if len(items) > 0 {
-		var name string
-		if subscription.Name != nil {
-			name = *subscription.Name
-		} else {
-			name = strings.Split(subscription.Email, "@")[0]
-		}
+	count = len(items)
 
+	if count > 0 {
 		data := struct {
 			Name   string
 			Length int
 			Items  []entity.ItemView
 		}{
 			Name:   name,
-			Length: len(items),
+			Length: count,
 			Items:  items,
 		}
 
@@ -157,13 +183,13 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
 		t, err := template.ParseFiles(fmt.Sprintf("%s/template/newsletter.html", configDirPath))
 		if err != nil {
 			slog.Error(err.Error(), "error", err)
-			return 0
+			return
 		}
 
 		var body bytes.Buffer
 		if err := t.Execute(&body, data); err != nil {
 			slog.Error(err.Error(), "error", err)
-			return 0
+			return
 		}
 
 		auth := smtp.PlainAuth("", conf.Smtp.UserName, conf.Smtp.Password, conf.Smtp.Host)
@@ -175,17 +201,15 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
 		err = smtp.SendMail(fmt.Sprintf("%s:%d", conf.Smtp.Host, conf.Smtp.Port), auth, from, to, msg)
 		if err != nil {
 			slog.Error(err.Error(), "error", err)
-			return 0
+			return
 		}
 	}
 
-	subscription.Published = time.Now()
-	if err := db.Save(subscription).Error; err != nil {
-		slog.Error(err.Error(), "error", err)
-		return 0
-	}
-
-	return len(items)
+	// subscription.Published = time.Now()
+	// if err := db.Save(subscription).Error; err != nil {
+	// 	slog.Error(err.Error(), "error", err)
+	// 	return
+	// }
 }
 
 func getArrToString(arr []int64) string {
