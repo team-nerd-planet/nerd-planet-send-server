@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 
@@ -23,6 +24,29 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+
+// time parse layout "2006-01-02 15:04:05"
+
+const (
+	preparationHour   int = 6
+	preparationMinute int = 55
+	scheduleHour      int = 7
+	scheduleMinute    int = 0
+)
+
+var (
+	todayScheduleDateTime time.Time
+)
+
+func init() {
+	loc, err := time.LoadLocation("Asia/Seoul")
+	if err != nil {
+		panic(err)
+	}
+
+	time.Local = loc
+	gocron.ChangeLoc(loc)
+}
 
 func main() {
 	conf, err := NewConfig()
@@ -56,18 +80,14 @@ func main() {
 		panic(err)
 	}
 
-	location, err := time.LoadLocation("Asia/Seoul")
-	if err != nil {
-		slog.Error("Unfortunately can't load a location", "error", err.Error())
-	} else {
-		time.Local = location
-		gocron.ChangeLoc(location)
-	}
-
 	slog.Info("current time", "time", time.Now())
 
-	gocron.Every(1).Day().At("07:00").Do(func() {
-		slog.Info("start schedule", "time", *location)
+	gocron.Every(1).Day().At(fmt.Sprintf("%02d:%02d", preparationHour, preparationMinute)).Do(func() {
+		now := time.Now()
+		slog.Info("start preparing", "time", now)
+
+		todayScheduleDateTime = time.Date(now.Year(), now.Month(), now.Day(), scheduleHour, scheduleMinute, 0, 0, time.Local)
+		slog.Info("Today Schedule Date Time", "time", todayScheduleDateTime)
 
 		var subscriptionArr []entity.Subscription
 
@@ -78,10 +98,19 @@ func main() {
 		var sb strings.Builder
 		sb.WriteString("안녕하세요! plaa 입니다.\n너드플라넷의 소식을 아래와 같이 전달했어요!!\n\n")
 
-		for _, subscription := range subscriptionArr {
-			count := publish(conf, db, subscription)
+		wg := new(sync.WaitGroup)
+		resChan := make(chan PublishResult, len(subscriptionArr))
 
-			sb.WriteString(fmt.Sprintf("%s님에게 %d개의 리스트를 보냈어요.\n", subscription.Email, count))
+		for _, subscription := range subscriptionArr {
+			wg.Add(1)
+			go publish(resChan, wg, conf, db, subscription)
+		}
+
+		wg.Wait()
+		close(resChan)
+
+		for r := range resChan {
+			sb.WriteString(fmt.Sprintf("%s님에게 %d개의 리스트를 보냈어요.\n", r.name, r.count))
 		}
 
 		if err := webhook(conf, sb.String()); err != nil {
@@ -92,36 +121,53 @@ func main() {
 	<-gocron.Start()
 }
 
-func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
+type PublishResult struct {
+	name  string
+	count int
+}
+
+func publish(res chan PublishResult, wg *sync.WaitGroup, conf *Config, db *gorm.DB, subscription entity.Subscription) {
 	var (
 		items []entity.ItemView
 		where = make([]string, 0)
 		param = make([]interface{}, 0)
+		name  string
+		count int = 0
 	)
+
+	if subscription.Name != nil {
+		name = *subscription.Name
+	} else {
+		name = strings.Split(subscription.Email, "@")[0]
+	}
+
+	defer func() {
+		res <- PublishResult{name: name, count: count}
+		wg.Done()
+	}()
 
 	where = append(where, "? <= item_published")
 	param = append(param, subscription.Published)
 
-	// TODO: 카테고라이징이 제대로 준비될 때까지 임시로 조건 비활성화
-	// if len(subscription.PreferredCompanyArr) > 0 {
-	// 	where = append(where, "feed_id IN ?")
-	// 	param = append(param, []int64(subscription.PreferredCompanyArr))
-	// }
+	if len(subscription.PreferredCompanyArr) > 0 {
+		where = append(where, "feed_id IN ?")
+		param = append(param, []int64(subscription.PreferredCompanyArr))
+	}
 
-	// if len(subscription.PreferredCompanySizeArr) > 0 {
-	// 	where = append(where, "company_size IN ?")
-	// 	param = append(param, []int64(subscription.PreferredCompanySizeArr))
-	// }
+	if len(subscription.PreferredCompanySizeArr) > 0 {
+		where = append(where, "company_size IN ?")
+		param = append(param, []int64(subscription.PreferredCompanySizeArr))
+	}
 
-	// if len(subscription.PreferredJobArr) > 0 {
-	// 	where = append(where, "job_tags_id_arr && ?") // `&&`: overlap (have elements in common)
-	// 	param = append(param, getArrToString(subscription.PreferredJobArr))
-	// }
+	if len(subscription.PreferredJobArr) > 0 {
+		where = append(where, "job_tags_id_arr && ?") // `&&`: overlap (have elements in common)
+		param = append(param, getArrToString(subscription.PreferredJobArr))
+	}
 
-	// if len(subscription.PreferredSkillArr) > 0 {
-	// 	where = append(where, "skill_tags_id_arr && ?") // `&&`: overlap (have elements in common)
-	// 	param = append(param, getArrToString(subscription.PreferredSkillArr))
-	// }
+	if len(subscription.PreferredSkillArr) > 0 {
+		where = append(where, "skill_tags_id_arr && ?") // `&&`: overlap (have elements in common)
+		param = append(param, getArrToString(subscription.PreferredSkillArr))
+	}
 
 	if err := db.Select(
 		"item_title",
@@ -131,24 +177,19 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
 		"feed_name",
 	).Where(strings.Join(where, " AND "), param...).Limit(5).Find(&items).Error; err != nil {
 		slog.Error(err.Error(), "error", err)
-		return 0
+		return
 	}
 
-	if len(items) > 0 {
-		var name string
-		if subscription.Name != nil {
-			name = *subscription.Name
-		} else {
-			name = strings.Split(subscription.Email, "@")[0]
-		}
+	count = len(items)
 
+	if count > 0 {
 		data := struct {
 			Name   string
 			Length int
 			Items  []entity.ItemView
 		}{
 			Name:   name,
-			Length: len(items),
+			Length: count,
 			Items:  items,
 		}
 
@@ -157,13 +198,13 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
 		t, err := template.ParseFiles(fmt.Sprintf("%s/template/newsletter.html", configDirPath))
 		if err != nil {
 			slog.Error(err.Error(), "error", err)
-			return 0
+			return
 		}
 
 		var body bytes.Buffer
 		if err := t.Execute(&body, data); err != nil {
 			slog.Error(err.Error(), "error", err)
-			return 0
+			return
 		}
 
 		auth := smtp.PlainAuth("", conf.Smtp.UserName, conf.Smtp.Password, conf.Smtp.Host)
@@ -172,20 +213,25 @@ func publish(conf *Config, db *gorm.DB, subscription entity.Subscription) int {
 		subject := "Subject: 너드플래닛 기술블로그 뉴스레터 \n"
 		mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 		msg := []byte(subject + mime + body.String())
+
+		slog.Info("ready to send mail", "Email", subscription.Email)
+
+		<-time.After(time.Until(todayScheduleDateTime))
+
+		slog.Info("send mail.", "Email", subscription.Email)
+
 		err = smtp.SendMail(fmt.Sprintf("%s:%d", conf.Smtp.Host, conf.Smtp.Port), auth, from, to, msg)
 		if err != nil {
 			slog.Error(err.Error(), "error", err)
-			return 0
+			return
 		}
 	}
 
 	subscription.Published = time.Now()
 	if err := db.Save(subscription).Error; err != nil {
 		slog.Error(err.Error(), "error", err)
-		return 0
+		return
 	}
-
-	return len(items)
 }
 
 func getArrToString(arr []int64) string {
