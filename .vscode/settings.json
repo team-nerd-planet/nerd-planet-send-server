@@ -5,6 +5,8 @@
         "gorm",
         "jasonlvhit",
         "mapstructure",
-        "sslmode"
+        "plaa",
+        "sslmode",
+        "Subname"
     ]
 }

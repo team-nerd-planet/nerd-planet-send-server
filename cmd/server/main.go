@@ -29,7 +29,7 @@ import (
 
 const (
 	preparationHour   int = 6
-	preparationMinute int = 50
+	preparationMinute int = 55
 	scheduleHour      int = 7
 	scheduleMinute    int = 0
 )
@@ -215,7 +215,11 @@ func publish(res chan PublishResult, wg *sync.WaitGroup, conf *Config, db *gorm.
 		mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 		msg := []byte(subject + mime + body.String())
 
-		<-time.After(time.Since(todayScheduleDateTime))
+		slog.Info("ready to send mail", "Email", subscription.Email)
+
+		<-time.After(time.Until(todayScheduleDateTime))
+
+		slog.Info("send mail.", "Email", subscription.Email)
 
 		err = smtp.SendMail(fmt.Sprintf("%s:%d", conf.Smtp.Host, conf.Smtp.Port), auth, from, to, msg)
 		if err != nil {
